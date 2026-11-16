@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PoseMuse"><meta name="theme-color" content="#ece9f5">
+<title>PoseMuse</title><link rel="apple-touch-icon" id="ico">
+<style>
+:root{--bg:#ece9f5;--ink:#221a45;--mut:#7a7399;--acc:#ff4f81;--ok:#25d0a0;--bad:#ff6b6b}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:500 16px/1.3 ui-rounded,-apple-system,"SF Pro Rounded",system-ui,sans-serif;touch-action:manipulation;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;transition:transform .12s}
+button:active{transform:scale(.94)}
+.scr{position:fixed;inset:0;display:none}.scr.on{display:flex;flex-direction:column}
+#home{padding:calc(env(safe-area-inset-top) + 14px) 18px 0}
+h1{font-size:36px;font-weight:800;letter-spacing:-.035em}
+.sub{color:var(--mut);margin:2px 0 14px}
+.seg{display:flex;background:#fff;border-radius:18px;padding:4px;gap:4px}
+.seg button{flex:1;padding:11px 0;border-radius:14px;font-weight:700;color:var(--mut)}
+.seg button.on{background:var(--ink);color:#fff}
+.row{display:flex;justify-content:space-between;align-items:center;margin:12px 2px}
+.row span{color:var(--mut);font-size:14px}
+.chip{padding:8px 14px;border-radius:99px;background:#fff;font-weight:700;font-size:14px}.chip.on{background:var(--acc);color:#fff}
+#grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:calc(env(safe-area-inset-bottom) + 24px);align-content:start;-webkit-overflow-scrolling:touch}
+.card{position:relative;background:#fff;border-radius:24px;padding:8px 8px 12px 12px}
+.card svg{width:100%;height:150px;display:block}
+.card h3{font-size:15px;font-weight:700;margin-top:6px}
+.card small{color:var(--mut);font-size:12px}
+.heart{position:absolute;top:10px;right:10px;width:36px;height:36px;font-size:21px;color:#c9c3de}.heart.on{color:var(--acc)}
+#cam{background:#000}
+#v,#c{position:absolute;inset:0;width:100%;height:100%}#v{object-fit:cover}
+.gb,.pill{background:rgba(20,15,40,.5);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff}
+.gb{width:44px;height:44px;border-radius:50%;font-size:24px;display:grid;place-items:center}
+.pill{padding:9px 15px;border-radius:99px;font-weight:700;font-size:14px;display:inline-block}
+.top{position:absolute;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top) + 10px) 14px 0;display:flex;justify-content:space-between;align-items:center;color:#fff}
+.ttl{text-align:center;text-shadow:0 1px 8px #0008;font-weight:700}.ttl small{display:block;font-weight:500;opacity:.85;font-size:12px}
+#st{position:absolute;top:calc(env(safe-area-inset-top) + 66px);left:0;right:0;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+#pct.ok{background:var(--ok);color:#06352a}
+.bot{position:absolute;bottom:0;left:0;right:0;padding:0 18px calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;gap:14px;align-items:center}
+.r1{display:flex;gap:10px;align-items:center}
+#auto.on{background:var(--ok);color:#06352a}
+.r2{width:100%;display:flex;justify-content:space-around;align-items:center}
+#shut{width:80px;height:80px;position:relative}
+#shut b{position:absolute;inset:10px;border-radius:50%;background:#fff}
+#shut svg{position:absolute;inset:0;transform:rotate(-90deg)}
+#thumb{width:54px;height:54px;border-radius:15px;background:rgba(255,255,255,.18) center/cover;border:2px solid #fff9}
+#tm{width:54px;text-align:center}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#flash.go{animation:fl .35s}@keyframes fl{from{opacity:.85}to{opacity:0}}
+#cd{position:absolute;inset:0;display:none;place-items:center;font-size:130px;font-weight:800;color:#fff;text-shadow:0 4px 30px #0007;pointer-events:none}
+#spin{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:700;pointer-events:none}
+#rev{position:fixed;inset:0;background:#0d0a18;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;z-index:9}
+#rev img{max-width:100%;max-height:70dvh;border-radius:18px}
+.btn{padding:15px 30px;border-radius:99px;background:var(--acc);color:#fff;font-weight:800}.btn.g{background:#ffffff22}
+</style></head><body>
+<main id="home" class="scr on">
+<h1>PoseMuse</h1><p class="sub">Pick a pose. Match it. Shoot.</p>
+<nav class="seg" id="seg"><button data-m="full" class="on">Full body</button><button data-m="half">Half body</button><button data-m="selfie">Selfie</button></nav>
+<div class="row"><button class="chip" id="fv">♡ Favorites</button><span id="cnt"></span></div>
+<section id="grid"></section>
+</main>
+<section id="cam" class="scr">
+<video id="v" playsinline muted autoplay></video><canvas id="c"></canvas>
+<div id="spin">Starting camera…</div>
+<div class="top"><button class="gb" id="bk">‹</button><div class="ttl" id="nm"></div><button class="gb" id="fl">⟳</button></div>
+<div id="st"><span class="pill" id="pct">…</span><span class="pill" id="hint"></span></div>
+<div id="cd"></div><div id="flash"></div>
+<div class="bot">
+<div class="r1"><button class="gb" id="pv">‹</button><button class="pill" id="auto">Auto-capture on</button><button class="gb" id="nx">›</button></div>
+<div class="r2"><button id="thumb"></button>
+<button id="shut"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="#ffffff55" stroke-width="5"/><circle id="rg" cx="40" cy="40" r="34" fill="none" stroke="#25d0a0" stroke-width="5" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"/></svg><b></b></button>
+<button class="pill" id="tm">⏱ Off</button></div>
+</div></section>
+<div id="rev"><img id="ri" alt=""><button class="btn" id="sv">Save photo</button><button class="btn g" id="dn">Done</button></div>
+<script>
+const $=s=>document.querySelector(s),R=Math.PI/180;
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch{return d}};
+// Poses: angles in degrees, 0 = screen right, 90 = down. LU/LL = upper/lower arm on screen-left, RU/RL screen-right, LT/LC thigh/shin, s = shoulder tilt, h = head tilt
+const B={LU:100,LL:100,RU:80,RL:80,LT:96,LC:93,RT:84,RC:87,s:0,h:0};
+const raw={
+full:[['Relaxed stand',{}],['Hand in pocket',{RU:72,RL:128}],['Hands on hips',{LU:125,LL:50,RU:55,RL:130}],['Weight shifted',{LU:125,LL:50,LT:92,LC:92,RT:70,RC:92,s:-4}],['Walking stride',{LU:112,LL:118,RU:68,RL:62,LT:108,LC:102,RT:72,RC:78}],['Legs crossed',{LT:92,LC:68,RT:88,RC:112}],['Arms wide',{LU:180,LL:180,RU:0,RL:0}],['Celebrate',{LU:-125,LL:-118,RU:-55,RL:-62}],['Hand to hair',{LU:150,LL:-42,h:-5}],['Point ahead',{RU:-35,RL:-35,h:4}]],
+half:[['Straight and relaxed',{}],['Hand on chin',{LU:115,LL:-51,h:5}],['Hand in hair',{LU:150,LL:-42,h:-6}],['Hand on shoulder',{RU:80,RL:-145,s:5}],['Hand on collar',{LU:105,LL:-45}],['Hands clasped',{LU:108,LL:25,RU:72,RL:155}],['Shoulder turn',{s:12,h:-8}],['Hands behind head',{LU:175,LL:-35,RU:5,RL:-145}],['Hand by face',{RU:70,RL:-108,h:-5}],['Arms crossed',{LU:95,LL:15,RU:85,RL:165},1]],
+selfie:[['Head tilt left',{h:-12,s:-3}],['Head tilt right',{h:12,s:3}],['Hand on cheek',{LU:125,LL:-59,h:8}],['Hand on chin',{LU:115,LL:-51,h:5}],['Peace sign',{RU:55,RL:-119,h:-6}],['Hand through hair',{LU:150,LL:-42,h:-8}],['Shoulder up',{s:-10,h:-8}],['Head turned',{s:8,h:4},1],['Both hands up',{LU:120,LL:-62,RU:60,RL:-118}],['Chin up angle',{h:10,s:6}]]};
+const MODES={full:'Full body',half:'Half body',selfie:'Selfie'};
+const POSES={};for(const m in raw)POSES[m]=raw[m].map(([n,o,g])=>({n,m,k:Object.keys(o),a:{...B,...o},g:!!g}));
+const BOX={full:[-2.4,-1.1,4.8,4.9],half:[-2.1,-1,4.2,3.2],selfie:[-1.7,-1,3.4,2.5]};
+function geo(p,m){const a=p.a,P=(o,l,d)=>[o[0]+l*Math.cos(d*R),o[1]+l*Math.sin(d*R)],sl=[-.5*Math.cos(a.s*R),-.5*Math.sin(a.s*R)],sr=[-sl[0],-sl[1]],hl=[-.37,1.4],hr=[.37,1.4],S=[],A=(u,v)=>S.push([u[0],u[1],v[0],v[1]]);
+const la=P(sl,.8,a.LU),ra=P(sr,.8,a.RU);
+A(sl,sr);A(sl,la);A(la,P(la,.75,a.LL));A(sr,ra);A(ra,P(ra,.75,a.RL));A(sl,hl);A(sr,hr);A(hl,hr);A([0,0],[.37*Math.sin(a.h*R),-.37*Math.cos(a.h*R)]);
+if(m==='full'){const lk=P(hl,1.1,a.LT),rk=P(hr,1.1,a.RT);A(hl,lk);A(lk,P(lk,1.05,a.LC));A(hr,rk);A(rk,P(rk,1.05,a.RC))}
+return{S,H:[.65*Math.sin(a.h*R),-.65*Math.cos(a.h*R)]}}
+function thumb(p){const[x,y,w,h]=BOX[p.m],g=geo(p,p.m),c=.45,e=.1;
+return`<svg viewBox="${x} ${y} ${w} ${h}" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="#cfc8e6" stroke-width=".07" d="M${x+e} ${y+e+c}V${y+e}H${x+e+c}M${x+w-e-c} ${y+e}H${x+w-e}V${y+e+c}M${x+e} ${y+h-e-c}V${y+h-e}H${x+e+c}M${x+w-e-c} ${y+h-e}H${x+w-e}V${y+h-e-c}"/><g stroke="#221a45" stroke-width=".13">${g.S.map(s=>`<path d="M${s[0]} ${s[1]}L${s[2]} ${s[3]}"/>`).join('')}<circle cx="${g.H[0]}" cy="${g.H[1]}" r=".28" stroke="#ff4f81"/></g></svg>`}
+let mode=ld('mode','full'),favOnly=0,fav=ld('fav',{}),cur=0,front=0,auto=ld('auto',true),tmr=0;
+const P=()=>POSES[mode][cur];
+function lib(){const L=POSES[mode];let n=0;$('#grid').innerHTML=L.map((p,i)=>{const f=fav[mode+i];if(favOnly&&!f)return'';n++;return`<article class="card" data-i="${i}">${thumb(p)}<button class="heart${f?' on':''}" data-h="${i}">${f?'♥':'♡'}</button><h3>${p.n}</h3><small>${p.g?'Guide only':'Live match'}</small></article>`}).join('')||'<p class="sub">No favorites here yet. Tap ♡ on a pose.</p>';$('#cnt').textContent=L.length+' poses';$('#seg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode))}
+$('#seg').onclick=e=>{const b=e.target.closest('button');if(!b)return;mode=b.dataset.m;sv('mode',mode);lib()};
+$('#fv').onclick=()=>{favOnly=!favOnly;$('#fv').classList.toggle('on',favOnly);lib()};
+$('#grid').onclick=e=>{const h=e.target.closest('[data-h]');if(h){const k=mode+h.dataset.h;fav[k]=!fav[k];sv('fav',fav);h.classList.toggle('on',fav[k]);h.textContent=fav[k]?'♥':'♡';if(favOnly)lib();return}const c=e.target.closest('.card');if(c)openCam(+c.dataset.i)};
+// Pose engine (loads in background while you browse)
+let lm=null,ready=0;
+(async()=>{try{const V='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';let m;try{m=await import(V)}catch{m=await import(V+'/+esm')}
+const fs=await m.FilesetResolver.forVisionTasks(V+'/wasm');
+lm=await m.PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'CPU'},runningMode:'VIDEO',numPoses:1});ready=1}catch(e){ready=-1}})();
+// Camera
+const v=$('#v'),c=$('#c'),x=c.getContext('2d'),RG=$('#rg'),PC=$('#pct'),HN=$('#hint');
+let stream,on=0,last=-1,sm=[],t0=0,cool=0,busy=0,lastBlob,W,H,lp=-9;
+function size(){const pr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*pr;c.height=H*pr;x.setTransform(pr,0,0,pr,0,0)}
+addEventListener('resize',size);
+const show=id=>document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));
+function setPose(){const p=P();$('#nm').innerHTML=`${p.n}<small>${MODES[mode]}, ${cur+1} of ${POSES[mode].length}</small>`;t0=0;sm=[]}
+async function start(){stop();$('#spin').style.display='grid';try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:front?'user':'environment',width:{ideal:1280},height:{ideal:720}},audio:false});v.srcObject=stream;v.style.transform=front?'scaleX(-1)':'';await v.play();$('#spin').style.display='none'}catch(e){$('#spin').textContent='Camera blocked. Allow camera access for this site in Settings > Safari.'}}
+function stop(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null}
+function openCam(i){cur=i;front=mode==='selfie';show('cam');size();setPose();$('#auto').classList.toggle('on',auto);$('#auto').textContent='Auto-capture '+(auto?'on':'off');on=1;start();loop()}
+$('#bk').onclick=()=>{on=0;stop();show('home')};
+$('#fl').onclick=()=>{front=!front;sm=[];start()};
+const step=d=>{const n=POSES[mode].length;cur=(cur+d+n)%n;setPose()};
+$('#pv').onclick=()=>step(-1);$('#nx').onclick=()=>step(1);
+$('#auto').onclick=()=>{auto=!auto;sv('auto',auto);$('#auto').classList.toggle('on',auto);$('#auto').textContent='Auto-capture '+(auto?'on':'off');t0=0};
+$('#tm').onclick=()=>{tmr=tmr===0?3:tmr===3?10:0;$('#tm').textContent=tmr?'⏱ '+tmr+'s':'⏱ Off'};
+// Matching
+const IDX={L:[11,13,15,23,25,27],R:[12,14,16,24,26,28]},BN={LU:['L',0,1],LL:['L',1,2],RU:['R',0,1],RL:['R',1,2],LT:['L',3,4],LC:['L',4,5],RT:['R',3,4],RC:['R',4,5]};
+const NM={LU:'left upper arm',LL:'left forearm',RU:'right upper arm',RL:'right forearm',LT:'left thigh',LC:'left shin',RT:'right thigh',RC:'right shin',h:'head tilt',s:'shoulder line'};
+const ang=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x)/R,df=(a,b)=>{const d=Math.abs(a-b)%360;return d>180?360-d:d},sc1=d=>Math.max(0,1-Math.max(0,d-12)/45);
+function keysFor(p){const k=Object.keys(BN);return mode==='full'?k:k.slice(0,4).filter(q=>mode==='half'||p.k.includes(q))}
+function ev(pts,p){const sd={L:front?IDX.L:IDX.R,R:front?IDX.R:IDX.L},r={d:{},w:0,sum:0,wk:null,wd:0};
+const add=(k,d,w)=>{r.d[k]=d;r.sum+=sc1(d)*w;r.w+=w;if(d>r.wd){r.wd=d;r.wk=k}};
+for(const k of keysFor(p)){const[s,a,b]=BN[k],A=pts[sd[s][a]],Q=pts[sd[s][b]];if(A.v>.5&&Q.v>.5)add(k,df(ang(A,Q),p.a[k]),1)}
+const e1=pts[front?2:5],e2=pts[front?5:2],h1=pts[sd.L[0]],h2=pts[sd.R[0]];
+if(e1.v>.5&&e2.v>.5)add('h',df(ang(e1,e2),p.a.h),.6);
+if(h1.v>.5&&h2.v>.5)add('s',df(ang(h1,h2),p.a.s),.6);
+const need={full:4,half:2,selfie:1}[mode];r.ok=r.w>=need;r.score=r.w?r.sum/r.w:0;return r}
+function line(a,b,col,w){x.strokeStyle=col;x.lineWidth=w;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke()}
+function draw(pts,r,p){const g=geo(p,mode);let ox,oy,k,sd={L:front?IDX.L:IDX.R,R:front?IDX.R:IDX.L};
+const h1=pts&&pts[sd.L[0]],h2=pts&&pts[sd.R[0]];
+if(h1&&h1.v>.5&&h2.v>.5){ox=(h1.x+h2.x)/2;oy=(h1.y+h2.y)/2;k=Math.max(40,Math.hypot(h1.x-h2.x,h1.y-h2.y))}
+else{const[bx,by,bw,bh]=BOX[mode];k=Math.min(W/bw,H/bh)*.85;ox=W/2-(bx+bw/2)*k;oy=H/2-(by+bh/2)*k}
+x.lineCap='round';x.strokeStyle='rgba(255,255,255,.6)';x.lineWidth=Math.max(3,k*.07);
+for(const s of g.S){x.beginPath();x.moveTo(ox+s[0]*k,oy+s[1]*k);x.lineTo(ox+s[2]*k,oy+s[3]*k);x.stroke()}
+x.beginPath();x.arc(ox+g.H[0]*k,oy+g.H[1]*k,.28*k,0,7);x.stroke();
+if(pts&&r){const q={L:sd.L,R:sd.R};for(const kk of keysFor(p)){const[s,a,b]=BN[kk],A=pts[q[s][a]],Q=pts[q[s][b]];if(A.v>.5&&Q.v>.5)line(A,Q,r.d[kk]<30?'#25d0a0':'#ff6b6b',5)}if(h1.v>.5&&h2.v>.5)line(h1,h2,(r.d.s||0)<30?'#25d0a0':'#ff6b6b',5)}}
+function loop(){if(!on)return;requestAnimationFrame(loop);x.clearRect(0,0,W,H);if(v.readyState<2||!v.videoWidth)return;
+const vw=v.videoWidth,vh=v.videoHeight,sc=Math.max(W/vw,H/vh),ox=(W-vw*sc)/2,oy=(H-vh*sc)/2,p=P(),now=performance.now();
+if(lm&&v.currentTime!==last){last=v.currentTime;let L;try{L=lm.detectForVideo(v,now).landmarks[0]}catch{}
+sm=L?L.map((q,i)=>{const X=(front?1-q.x:q.x)*vw*sc+ox,Y=q.y*vh*sc+oy,o=sm[i];return{x:o?o.x*.4+X*.6:X,y:o?o.y*.4+Y*.6:Y,v:q.visibility}}):[]}
+const pts=sm.length?sm:null,r=pts&&!p.g?ev(pts,p):null;draw(pts,r,p);
+let t='',pc='…',hit=0;
+if(ready===0)t='Loading pose engine…';else if(ready<0)t='Pose engine offline. Shutter still works.';
+else if(p.g)t='Guide only. Shoot when ready.';
+else if(!pts)t='Step into the frame';
+else if(!r.ok)t='Show more of your '+(mode==='full'?'body':'upper body');
+else{const s=Math.round(r.score*100);pc=s+'%';hit=r.score>=.85;t=hit?(auto?'Hold still…':'Great match!'):'Adjust your '+NM[r.wk]}
+if(pc!==PC.textContent)PC.textContent=pc;PC.classList.toggle('ok',hit);if(t!==HN.textContent)HN.textContent=t;
+if(hit&&auto&&!busy&&now>cool){if(!t0)t0=now;const q=Math.min(1,(now-t0)/900);RG.style.strokeDashoffset=213.6*(1-q);if(q>=1){t0=0;cool=now+3000;snap()}}else{t0=0;RG.style.strokeDashoffset=213.6}}
+// Capture
+function snap(){if(!v.videoWidth)return;const k=document.createElement('canvas');k.width=v.videoWidth;k.height=v.videoHeight;k.getContext('2d').drawImage(v,0,0);const f=$('#flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');k.toBlob(b=>{lastBlob=b;$('#thumb').style.backgroundImage=`url(${URL.createObjectURL(b)})`},'image/jpeg',.95)}
+$('#shut').onclick=()=>{if(busy)return;if(!tmr)return snap();busy=1;let n=tmr;const cd=$('#cd');cd.style.display='grid';cd.textContent=n;const iv=setInterval(()=>{n--;if(n>0)cd.textContent=n;else{clearInterval(iv);cd.style.display='none';busy=0;snap()}},1000)};
+$('#thumb').onclick=()=>{if(!lastBlob)return;$('#ri').src=URL.createObjectURL(lastBlob);$('#rev').style.display='flex'};
+$('#dn').onclick=()=>$('#rev').style.display='none';
+$('#sv').onclick=async()=>{const f=new File([lastBlob],'posemuse-'+Date.now()+'.jpg',{type:'image/jpeg'});try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});else{const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=f.name;a.click()}}catch{}};
+// Home screen icon
+(()=>{const k=document.createElement('canvas');k.width=k.height=180;const q=k.getContext('2d'),g=q.createLinearGradient(0,0,180,180);g.addColorStop(0,'#221a45');g.addColorStop(1,'#ff4f81');q.fillStyle=g;q.fillRect(0,0,180,180);q.strokeStyle='#fff';q.lineWidth=11;q.lineCap='round';q.beginPath();q.arc(90,52,17,0,7);q.moveTo(90,76);q.lineTo(90,116);q.moveTo(58,92);q.lineTo(122,92);q.moveTo(90,116);q.lineTo(70,152);q.moveTo(90,116);q.lineTo(110,152);q.stroke();$('#ico').href=k.toDataURL()})();
+lib();
+</script></body></html>
